@@ -91,6 +91,16 @@ function initVideoBackground() {
                         instance.mute();
                     }
                 });
+                document.addEventListener('click', function(e) {
+                    if (/^(A|INPUT|TEXTAREA|SELECT|BUTTON)$/.test(e.target.tagName)) return;
+                    if (e.target.closest && e.target.closest('a')) return;
+                    e.preventDefault();
+                    if (instance.muted) {
+                        instance.unmute();
+                    } else {
+                        instance.mute();
+                    }
+                });
             }
         }
     });
