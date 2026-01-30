@@ -127,6 +127,40 @@
     }
 
     /**
+     * Extract video ID from a watch URL.
+     */
+    function getVideoIdFromUrl(url) {
+        if (!url) return null;
+        var m = String(url).match(/[?&]v=([^&]+)/i);
+        if (m) return m[1];
+        return String(url).split(/[?&]/)[0];
+    }
+
+    /**
+     * Pick a random video from all seasons that is not the current URL.
+     * Use when the current video fails to play (e.g. embed disabled on other site).
+     * Returns { url, startAt } or null if no other video.
+     */
+    function getAnotherVideoUrl(currentUrl) {
+        var currentId = getVideoIdFromUrl(currentUrl);
+        var all = [];
+        var keys = ["spring", "summer", "fall", "winter"];
+        for (var i = 0; i < keys.length; i++) {
+            var list = VIDEO_GROUPS[keys[i]];
+            if (list && list.length) all = all.concat(list);
+        }
+        var others = [];
+        for (var j = 0; j < all.length; j++) {
+            var parsed = parseEntry(all[j]);
+            if (parsed.id !== currentId) others.push(parsed);
+        }
+        if (others.length === 0) return null;
+        var index = Math.floor(Math.random() * others.length);
+        var parsed = others[index];
+        return { url: toWatchUrl(parsed.id), startAt: parsed.startAt };
+    }
+
+    /**
      * Public API.
      */
     global.SeasonVideo = {
@@ -137,6 +171,7 @@
             return getSeason(d.month, d.day);
         },
         getVideoUrl: getVideoUrl,
-        getRandomVideoUrl: getRandomVideoUrl
+        getRandomVideoUrl: getRandomVideoUrl,
+        getAnotherVideoUrl: getAnotherVideoUrl
     };
 })(typeof window !== "undefined" ? window : this);

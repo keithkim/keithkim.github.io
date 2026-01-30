@@ -6,24 +6,57 @@
 var isFirefox = typeof InstallTrigger !== 'undefined',
 mobileVar = isMobile.any;
 
-if ($('[data-vbg]').length) {
+var videoFailureCheckTimeout = null;
+var lastLoadedVideoUrl = null;
+var videoFallbackAttempts = 0;
+var VIDEO_FALLBACK_MAX_ATTEMPTS = 5;
+
+function scheduleVideoFailureCheck(instance) {
+    if (videoFailureCheckTimeout) clearTimeout(videoFailureCheckTimeout);
+    videoFailureCheckTimeout = setTimeout(function() {
+        videoFailureCheckTimeout = null;
+        if (!instance || instance.currentState !== 'notstarted') return;
+        console.error('Video failed to play (e.g. embed disabled on other site):', lastLoadedVideoUrl);
+        if (videoFallbackAttempts >= VIDEO_FALLBACK_MAX_ATTEMPTS) {
+            console.error('Max fallback attempts reached, stopping.');
+            return;
+        }
+        var result = (typeof SeasonVideo !== 'undefined' && SeasonVideo.getAnotherVideoUrl)
+            ? SeasonVideo.getAnotherVideoUrl(lastLoadedVideoUrl) : null;
+        if (result && result.url) {
+            videoFallbackAttempts += 1;
+            lastLoadedVideoUrl = result.url;
+            instance.setSource(result.url);
+            if (result.startAt != null && typeof instance.setStartAt === 'function') {
+                instance.setStartAt(result.startAt);
+            }
+            scheduleVideoFailureCheck(instance);
+        }
+    }, 5000);
+}
+
+function initVideoBackground() {
+    if (!$('[data-vbg]').length) return;
+    videoFallbackAttempts = 0;
     /* Season-based video (New York): pick random video for current season */
     var videoResult = (typeof SeasonVideo !== 'undefined' && SeasonVideo.getVideoUrl)
         ? SeasonVideo.getVideoUrl()
         : { url: 'https://www.youtube.com/watch?v=0QKdqm5TX6c', startAt: undefined };
     var videoUrl = (videoResult && videoResult.url) ? videoResult.url : 'https://www.youtube.com/watch?v=0QKdqm5TX6c';
     var videoStartAt = (videoResult && videoResult.startAt != null) ? videoResult.startAt : undefined;
+    lastLoadedVideoUrl = videoUrl;
     $('#yt-background').attr('data-vbg', videoUrl);
     if (videoStartAt != null) $('#yt-background').attr('data-vbg-start-at', videoStartAt);
-    /* YouTube video background via plugin (no iframe in HTML, like textomy.com) */
-    $('[data-vbg]').youtube_background({ muted: false });
+    /* Start muted so Chrome/Brave allow autoplay (like Textomy); any key toggles mute/unmute */
+    $('[data-vbg]').youtube_background({ muted: true });
     $('#yt-background').on('video-background-ready', function() {
+        console.log('Video playing:', lastLoadedVideoUrl);
         TweenMax.fromTo($(".bg-cover"), 0.25, {autoAlpha: 0}, {autoAlpha: 1});
-        /* Any key press toggles mute/unmute; ENTER = random video from all seasons */
         var ytEl = document.getElementById('yt-background');
         if (typeof VIDEO_BACKGROUNDS !== 'undefined' && ytEl) {
             var instance = VIDEO_BACKGROUNDS.get(ytEl);
             if (instance) {
+                scheduleVideoFailureCheck(instance);
                 document.addEventListener('keydown', function(e) {
                     if (/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) return;
                     var isEnter = (e.key === 'Enter' || e.keyCode === 13);
@@ -32,10 +65,15 @@ if ($('[data-vbg]').length) {
                         var result = (typeof SeasonVideo !== 'undefined' && SeasonVideo.getRandomVideoUrl)
                             ? SeasonVideo.getRandomVideoUrl() : null;
                         if (result && result.url) {
+                            videoFallbackAttempts = 0;
+                            lastLoadedVideoUrl = result.url;
+                            if (videoFailureCheckTimeout) clearTimeout(videoFailureCheckTimeout);
+                            videoFailureCheckTimeout = null;
                             instance.setSource(result.url);
                             if (result.startAt != null && typeof instance.setStartAt === 'function') {
                                 instance.setStartAt(result.startAt);
                             }
+                            scheduleVideoFailureCheck(instance);
                         }
                         return;
                     }
@@ -49,13 +87,44 @@ if ($('[data-vbg]').length) {
             }
         }
     });
-} else if ($('.bg-cover').length) {
+}
+
+function initImageBackground() {
+    if (!$('.bg-cover').length || $('[data-vbg]').length) return;
     $('.bg-cover').imagesLoaded({
         background: true
     }, function( imgLoad ) {
         TweenMax.fromTo($(".bg-cover"), 0.25, {autoAlpha: 0}, {autoAlpha: 1});
     });
 }
+
+$(document).ready(function() {
+    if ($('[data-vbg]').length) {
+        function runVideoInit() {
+            if (typeof YT !== 'undefined' && typeof YT.Player === 'function') {
+                initVideoBackground();
+                return;
+            }
+            var attempts = 0;
+            var t = setInterval(function() {
+                attempts++;
+                if (typeof YT !== 'undefined' && typeof YT.Player === 'function') {
+                    clearInterval(t);
+                    initVideoBackground();
+                    return;
+                }
+                if (attempts > 150) clearInterval(t);
+            }, 100);
+        }
+        if (window.ytApiReady || (typeof YT !== 'undefined' && typeof YT.Player === 'function')) {
+            initVideoBackground();
+        } else {
+            runVideoInit();
+        }
+    } else if ($('.bg-cover').length) {
+        initImageBackground();
+    }
+});
 
 $(window).load(function() {
 
