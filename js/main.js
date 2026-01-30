@@ -6,12 +6,56 @@
 var isFirefox = typeof InstallTrigger !== 'undefined',
 mobileVar = isMobile.any;
 
-$('.bg-cover').imagesLoaded({
-    background: true
-}, function( imgLoad ) {
-    TweenMax.fromTo($(".bg-cover"), 0.25, {autoAlpha: 0}, {autoAlpha: 1});
+if ($('[data-vbg]').length) {
+    /* Season-based video (New York): pick random video for current season */
+    var videoResult = (typeof SeasonVideo !== 'undefined' && SeasonVideo.getVideoUrl)
+        ? SeasonVideo.getVideoUrl()
+        : { url: 'https://www.youtube.com/watch?v=0QKdqm5TX6c', startAt: undefined };
+    var videoUrl = (videoResult && videoResult.url) ? videoResult.url : 'https://www.youtube.com/watch?v=0QKdqm5TX6c';
+    var videoStartAt = (videoResult && videoResult.startAt != null) ? videoResult.startAt : undefined;
+    $('#yt-background').attr('data-vbg', videoUrl);
+    if (videoStartAt != null) $('#yt-background').attr('data-vbg-start-at', videoStartAt);
+    /* YouTube video background via plugin (no iframe in HTML, like textomy.com) */
+    $('[data-vbg]').youtube_background({ muted: false });
+    $('#yt-background').on('video-background-ready', function() {
+        TweenMax.fromTo($(".bg-cover"), 0.25, {autoAlpha: 0}, {autoAlpha: 1});
+        /* Any key press toggles mute/unmute; ENTER = random video from all seasons */
+        var ytEl = document.getElementById('yt-background');
+        if (typeof VIDEO_BACKGROUNDS !== 'undefined' && ytEl) {
+            var instance = VIDEO_BACKGROUNDS.get(ytEl);
+            if (instance) {
+                document.addEventListener('keydown', function(e) {
+                    if (/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) return;
+                    var isEnter = (e.key === 'Enter' || e.keyCode === 13);
+                    if (isEnter) {
+                        e.preventDefault();
+                        var result = (typeof SeasonVideo !== 'undefined' && SeasonVideo.getRandomVideoUrl)
+                            ? SeasonVideo.getRandomVideoUrl() : null;
+                        if (result && result.url) {
+                            instance.setSource(result.url);
+                            if (result.startAt != null && typeof instance.setStartAt === 'function') {
+                                instance.setStartAt(result.startAt);
+                            }
+                        }
+                        return;
+                    }
+                    e.preventDefault();
+                    if (instance.muted) {
+                        instance.unmute();
+                    } else {
+                        instance.mute();
+                    }
+                });
+            }
+        }
+    });
+} else if ($('.bg-cover').length) {
+    $('.bg-cover').imagesLoaded({
+        background: true
+    }, function( imgLoad ) {
+        TweenMax.fromTo($(".bg-cover"), 0.25, {autoAlpha: 0}, {autoAlpha: 1});
+    });
 }
-);
 
 $(window).load(function() {
 

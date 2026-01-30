@@ -363,13 +363,58 @@ a.btn-bordered {
     }
 }
 
-#minimos-1 .bg-image {
-    background-image: url("../images/office-865091_1280.jpg");
+/* YouTube video background - cover viewport like background-size: cover */
+.bg-video-wrapper {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    overflow: hidden;
+    visibility: hidden;
+}
+
+/* No full-screen overlay - video visible; dark bar only at bottom (like textomy.com) */
+.bg-video-wrapper.bg-cover::after {
+    display: none;
 }
 
 #minimos-1 {
     font-family: "Raleway", sans-serif;
     background: #151515;
+}
+
+/* Bottom bar for text only - dark overlay 500px tall (like textomy.com) */
+#minimos-1 .content-wrapper {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    height: 300px;
+    max-height: 54vh;
+    z-index: 10;
+    background: rgba(29, 31, 40, 0.55);
+    padding: 1.5em 1em 1.5em;
+    display: block;
+    overflow: auto;
+}
+
+#minimos-1 .content-wrapper::before {
+    display: none;
+}
+
+#minimos-1 .content-wrapper .v-center {
+    display: block;
+    width: 86%;
+    max-width: 48em;
+    margin: 0 auto;
+    vertical-align: top;
+}
+
+#minimos-1 .content-wrapper .main-content {
+    text-align: left;
 }
 
 .layout-center .v-center, .layout-center .sven-badge {
