@@ -18,16 +18,16 @@
      */
     var VIDEO_GROUPS = {
         spring: [
-            "0QKdqm5TX6c", "ZdfJcN-yBIE", "mdoZdXBpYzU", "6g3QiE4IB-4", "YXOqmwN2FCg"
+            "0QKdqm5TX6c", "mdoZdXBpYzU", "6g3QiE4IB-4", "YXOqmwN2FCg"
         ],
         summer: [
-            "0QKdqm5TX6c", "p0SEFeL9PW4", "YyUhslfLfZM", "J_4leOeH9Lc", "MxcJtLbIhvs", "u_gD5ErXOvc"
+            "0QKdqm5TX6c", "p0SEFeL9PW4", "YyUhslfLfZM", "J_4leOeH9Lc", "MxcJtLbIhvs?t=12", "u_gD5ErXOvc"
         ],
         fall: [
             "0QKdqm5TX6c", "xK5_0OIpgRI", "wid7PEVrgRU", "0L38Z9hIi5s", "WEP5RV86r_M", "A7zZMXlaO5o"
         ],
         winter: [
-            "0QKdqm5TX6c", "A7zZMXlaO5o", "ADDFmfOeihU", "jh_KFTYJnDo?t=9", "9c-MLSjSYDw"
+            "0QKdqm5TX6c", "A7zZMXlaO5o", "ADDFmfOeihU?t=12", "jh_KFTYJnDo?t=10", "9c-MLSjSYDw"
         ]
     };
 
