@@ -27,7 +27,7 @@
             "0QKdqm5TX6c", "xK5_0OIpgRI", "wid7PEVrgRU", "0L38Z9hIi5s", "WEP5RV86r_M", "A7zZMXlaO5o"
         ],
         winter: [
-            "0QKdqm5TX6c", "A7zZMXlaO5o", "ADDFmfOeihU", "2ff3QgRYFks", "jh_KFTYJnDo?t=9", "9c-MLSjSYDw"
+            "0QKdqm5TX6c", "A7zZMXlaO5o", "ADDFmfOeihU", "jh_KFTYJnDo?t=9", "9c-MLSjSYDw"
         ]
     };
 
