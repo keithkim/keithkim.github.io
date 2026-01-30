@@ -8,6 +8,7 @@ mobileVar = isMobile.any;
 
 var videoFailureCheckTimeout = null;
 var lastLoadedVideoUrl = null;
+var lastLoadedVideoStartAt = null;
 var videoFallbackAttempts = 0;
 var VIDEO_FALLBACK_MAX_ATTEMPTS = 5;
 
@@ -26,6 +27,7 @@ function scheduleVideoFailureCheck(instance) {
         if (result && result.url) {
             videoFallbackAttempts += 1;
             lastLoadedVideoUrl = result.url;
+            lastLoadedVideoStartAt = result.startAt != null ? result.startAt : undefined;
             instance.setSource(result.url);
             if (result.startAt != null && typeof instance.setStartAt === 'function') {
                 instance.setStartAt(result.startAt);
@@ -45,6 +47,7 @@ function initVideoBackground() {
     var videoUrl = (videoResult && videoResult.url) ? videoResult.url : 'https://www.youtube.com/watch?v=0QKdqm5TX6c';
     var videoStartAt = (videoResult && videoResult.startAt != null) ? videoResult.startAt : undefined;
     lastLoadedVideoUrl = videoUrl;
+    lastLoadedVideoStartAt = videoStartAt;
     $('#yt-background').attr('data-vbg', videoUrl);
     if (videoStartAt != null) $('#yt-background').attr('data-vbg-start-at', videoStartAt);
     /* Start muted so Chrome/Brave allow autoplay (like Textomy); any key toggles mute/unmute */
@@ -56,6 +59,9 @@ function initVideoBackground() {
         if (typeof VIDEO_BACKGROUNDS !== 'undefined' && ytEl) {
             var instance = VIDEO_BACKGROUNDS.get(ytEl);
             if (instance) {
+                if (lastLoadedVideoStartAt != null && typeof instance.seekTo === 'function') {
+                    instance.seekTo(lastLoadedVideoStartAt);
+                }
                 scheduleVideoFailureCheck(instance);
                 document.addEventListener('keydown', function(e) {
                     if (/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) return;
@@ -67,6 +73,7 @@ function initVideoBackground() {
                         if (result && result.url) {
                             videoFallbackAttempts = 0;
                             lastLoadedVideoUrl = result.url;
+                            lastLoadedVideoStartAt = result.startAt != null ? result.startAt : undefined;
                             if (videoFailureCheckTimeout) clearTimeout(videoFailureCheckTimeout);
                             videoFailureCheckTimeout = null;
                             instance.setSource(result.url);

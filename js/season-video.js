@@ -18,7 +18,7 @@
      */
     var VIDEO_GROUPS = {
         spring: [
-            "0QKdqm5TX6c", "mdoZdXBpYzU", "6g3QiE4IB-4", "YXOqmwN2FCg"
+            "0QKdqm5TX6c", "6g3QiE4IB-4", "YXOqmwN2FCg"
         ],
         summer: [
             "0QKdqm5TX6c", "p0SEFeL9PW4", "YyUhslfLfZM", "J_4leOeH9Lc", "MxcJtLbIhvs?t=12", "u_gD5ErXOvc"
@@ -63,15 +63,17 @@
     }
 
     /**
-     * Normalize to full YouTube watch URL (id only, no query string).
+     * Normalize to full YouTube watch URL. Optionally append &t=seconds for start time.
      */
-    function toWatchUrl(id) {
+    function toWatchUrl(id, startAt) {
         var s = String(id).trim();
         if (/^https?:\/\//i.test(s)) {
             var m = s.match(/[?&]v=([^&]+)/i);
             s = m ? m[1] : s;
         }
-        return "https://www.youtube.com/watch?v=" + s;
+        var url = "https://www.youtube.com/watch?v=" + s;
+        if (startAt != null && startAt > 0) url += "&t=" + startAt;
+        return url;
     }
 
     /**
@@ -106,7 +108,7 @@
         if (!list || list.length === 0) return null;
         var index = Math.floor(Math.random() * list.length);
         var parsed = parseEntry(list[index]);
-        return { url: toWatchUrl(parsed.id), startAt: parsed.startAt };
+        return { url: toWatchUrl(parsed.id, parsed.startAt), startAt: parsed.startAt };
     }
 
     /**
@@ -123,7 +125,7 @@
         if (all.length === 0) return null;
         var index = Math.floor(Math.random() * all.length);
         var parsed = parseEntry(all[index]);
-        return { url: toWatchUrl(parsed.id), startAt: parsed.startAt };
+        return { url: toWatchUrl(parsed.id, parsed.startAt), startAt: parsed.startAt };
     }
 
     /**
@@ -157,7 +159,7 @@
         if (others.length === 0) return null;
         var index = Math.floor(Math.random() * others.length);
         var parsed = others[index];
-        return { url: toWatchUrl(parsed.id), startAt: parsed.startAt };
+        return { url: toWatchUrl(parsed.id, parsed.startAt), startAt: parsed.startAt };
     }
 
     /**
